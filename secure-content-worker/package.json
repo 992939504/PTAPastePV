@@ -1,0 +1,40 @@
+{
+  "name": "secure-content-worker",
+  "version": "1.0.0",
+  "description": "Password-protected content sharing system on Cloudflare Worker",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "publish": "wrangler deploy",
+    "tail": "wrangler tail",
+    "kv:create": "wrangler kv:namespace create CONTENT_KV",
+    "kv:create-preview": "wrangler kv:namespace create CONTENT_KV --preview",
+    "kv:list": "wrangler kv:namespace list",
+    "login": "wrangler login",
+    "logout": "wrangler logout",
+    "whoami": "wrangler whoami"
+  },
+  "keywords": [
+    "cloudflare",
+    "worker",
+    "password",
+    "content",
+    "kv",
+    "edge",
+    "serverless"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  }
+}
