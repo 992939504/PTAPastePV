@@ -13,36 +13,33 @@
 
 ## 快速开始
 
-### 1. 安装依赖
+### 方法一：命令行部署
+
+#### 1. 安装依赖
 
 ```bash
 cd secure-content-worker
 npm install
 ```
 
-### 2. 登录Cloudflare
+#### 2. 登录Cloudflare
 
 ```bash
 npx wrangler login
 ```
 
-### 3. 创建KV命名空间
+#### 3. 创建KV命名空间
 
 ```bash
-# 创建生产环境KV
 npx wrangler kv:namespace create CONTENT_KV
-
-# 创建预览环境KV（用于本地开发）
-npx wrangler kv:namespace create CONTENT_KV --preview
 ```
 
 命令执行后会返回类似以下内容：
 ```
 { binding = "CONTENT_KV", id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }
-{ binding = "CONTENT_KV", preview_id = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy" }
 ```
 
-### 4. 配置wrangler.toml
+#### 4. 配置wrangler.toml
 
 将上一步获得的ID填入`wrangler.toml`文件：
 
@@ -50,52 +47,69 @@ npx wrangler kv:namespace create CONTENT_KV --preview
 [[kv_namespaces]]
 binding = "CONTENT_KV"
 id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-preview_id = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
 ```
 
-同时修改管理员密码：
+#### 5. 设置管理员密码
+
+在`wrangler.toml`中添加：
+
 ```toml
 [vars]
 ADMIN_PASSWORD = "your-secure-admin-password"
 ```
 
-### 5. 本地开发
-
-```bash
-npm run dev
-```
-
-访问 `http://localhost:8787` 进行测试。
-
-### 6. 部署到Cloudflare
+#### 6. 部署
 
 ```bash
 npm run deploy
 ```
 
-部署成功后会显示Worker的URL，例如：`https://secure-content-worker.your-subdomain.workers.dev`
+部署成功后会显示Worker的URL。
 
-## 使用说明
+---
 
-### 用户端使用
+### 方法二：通过 Cloudflare Dashboard 部署（推荐）
 
-1. 访问Worker URL
-2. 输入密码
-3. 查看内容并复制
+适合从 GitHub 仓库 fork 后直接部署。
 
-### 管理员使用
+#### 1. Fork 仓库
 
-1. 访问 `https://your-worker-url/admin`
-2. 输入管理员密码（在wrangler.toml中配置）
-3. 添加新的密码和内容：
-   - 输入用户密码（用户访问时使用）
-   - 输入标题
-   - 添加多个内容项（标签+内容）
-   - 点击"Add Content"
-4. 管理现有内容：
-   - 点击"Load Content List"查看所有内容
-   - 点击"Delete"删除不需要的内容
+将本仓库 fork 到你的 GitHub 账号。
 
+#### 2. 连接 Cloudflare
+
+1. 登录 Cloudflare Dashboard
+2. 进入 Workers & Pages
+3. 点击 Create application
+4. 选择 Pages（或 Workers）
+5. 连接你的 GitHub 账号
+6. 选择 fork 后的仓库
+
+#### 3. 创建 KV 命名空间
+
+1. 在 Cloudflare Dashboard 左侧菜单找到 KV
+2. 点击 Create namespace
+3. 输入名称 `CONTENT_KV`
+4. 记下生成的 Namespace ID
+
+#### 4. 配置 Worker
+
+1. 进入 Workers & Pages
+2. 点击你的 Worker
+3. 进入 Settings → Variables
+
+**添加 KV 绑定：**
+- Variable name: `CONTENT_KV`
+- KV namespace: 选择刚创建的命名空间
+
+**添加环境变量：**
+- Variable name: `ADMIN_PASSWORD`
+- Value: 你的管理员密码
+- 点击 Encrypt 加密保存
+
+#### 5. 重新部署
+
+保存设置后。Worker 会自动重新部署。
 ## 数据结构
 
 每个密码对应的内容结构：

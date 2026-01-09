@@ -43,6 +43,28 @@ async function hashPassword(password) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Utility: Escape HTML special characters to prevent XSS
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Utility: Escape JavaScript string literals
+function escapeJsString(str) {
+  return str
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t")
+    .replace(/\0/g, "\\0");
+}
+
 // Utility: JSON response
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -61,6 +83,10 @@ function htmlResponse(html) {
 // API: Verify password and return content
 async function handleVerify(request, env) {
   try {
+    if (!env.CONTENT_KV) {
+      return jsonResponse({ success: false, message: 'KV storage not configured' }, 500);
+    }
+
     const { password } = await request.json();
 
     if (!password) {
@@ -90,6 +116,10 @@ async function handleVerify(request, env) {
 // API: Admin add content
 async function handleAdminAdd(request, env) {
   try {
+    if (!env.CONTENT_KV) {
+      return jsonResponse({ success: false, message: 'KV storage not configured' }, 500);
+    }
+
     const { adminPassword, password, title, items, expiresAt } = await request.json();
 
     // Verify admin password
@@ -120,18 +150,21 @@ async function handleAdminAdd(request, env) {
 // API: Admin delete content
 async function handleAdminDelete(request, env) {
   try {
-    const { adminPassword, password } = await request.json();
+    if (!env.CONTENT_KV) {
+      return jsonResponse({ success: false, message: 'KV storage not configured' }, 500);
+    }
+
+    const { adminPassword, hash } = await request.json();
 
     if (adminPassword !== env.ADMIN_PASSWORD) {
       return jsonResponse({ success: false, message: 'Invalid admin password' }, 401);
     }
 
-    if (!password) {
-      return jsonResponse({ success: false, message: 'Password required' }, 400);
+    if (!hash) {
+      return jsonResponse({ success: false, message: 'Hash required' }, 400);
     }
 
-    const passwordHash = await hashPassword(password);
-    await env.CONTENT_KV.delete(passwordHash);
+    await env.CONTENT_KV.delete(hash);
 
     return jsonResponse({ success: true, message: 'Content deleted successfully' });
   } catch (error) {
@@ -142,6 +175,10 @@ async function handleAdminDelete(request, env) {
 // API: Admin list all content
 async function handleAdminList(request, env) {
   try {
+    if (!env.CONTENT_KV) {
+      return jsonResponse({ success: false, message: 'KV storage not configured' }, 500);
+    }
+
     const { adminPassword } = await request.json();
 
     if (adminPassword !== env.ADMIN_PASSWORD) {
@@ -359,7 +396,7 @@ function handleLoginPage() {
               <div class="content-card">
                 <div class="card-label">\${escapeHtml(item.label)}</div>
                 <div class="card-content">\${escapeHtml(item.content)}</div>
-                <button class="copy-btn" onclick="copyToClipboard('\${escapeHtml(item.content)}', this)">Copy</button>
+                <button class="copy-btn" data-content="\${escapeHtml(item.content)}">Copy</button>
               </div>
             \`).join('')}
           </div>
@@ -427,22 +464,34 @@ function handleLoginPage() {
       \`;
     }
 
-    function copyToClipboard(text, button) {
-      navigator.clipboard.writeText(text).then(() => {
-        const originalText = button.textContent;
-        button.textContent = 'Copied!';
-        button.classList.add('copied');
-        setTimeout(() => {
-          button.textContent = originalText;
-          button.classList.remove('copied');
-        }, 2000);
-      });
-    }
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('copy-btn')) {
+        const text = e.target.getAttribute('data-content');
+        navigator.clipboard.writeText(text).then(() => {
+          const originalText = e.target.textContent;
+          e.target.textContent = 'Copied!';
+          e.target.classList.add('copied');
+          setTimeout(() => {
+            e.target.textContent = originalText;
+            e.target.classList.remove('copied');
+          }, 2000);
+        });
+      }
+    });
 
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
+    }
+
+    function escapeJsString(str) {
+      return str
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, "\\n")
+        .replace(/\r/g, "\\r");
     }
   </script>
 </body>
@@ -780,7 +829,7 @@ function handleAdminPage() {
         const response = await fetch('/api/admin/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ adminPassword, password: hash })
+          body: JSON.stringify({ adminPassword, hash })
         });
 
         const result = await response.json();
