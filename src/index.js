@@ -163,6 +163,9 @@ function htmlResponse(html) {
   return new Response(html, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
       ...SECURITY_HEADERS
     }
   });
@@ -214,15 +217,14 @@ async function handleUpload(request, env) {
     const validExpiryHours = [1, 6, 24, 168]; // 1h, 6h, 24h, 7d
     const hours = expiryHours && validExpiryHours.includes(expiryHours) ? expiryHours : 24;
 
-    // Generate token and password
-    const token = generateToken();
+    // Generate password
     const password = generatePassword();
 
     // Calculate expiry time
     const now = new Date();
     const expiresAt = new Date(now.getTime() + hours * 60 * 60 * 1000);
 
-    // Store in KV
+    // Store in KV (use password as key)
     const data = {
       content: sanitizedContent,
       password,
@@ -231,11 +233,10 @@ async function handleUpload(request, env) {
       views: 0
     };
 
-    await env.CONTENT_KV.put(token, JSON.stringify(data));
+    await env.CONTENT_KV.put(password, JSON.stringify(data));
 
     return jsonResponse({
       success: true,
-      token,
       password,
       expiresAt: expiresAt.toISOString(),
       expiresIn: hours
@@ -272,18 +273,18 @@ async function handleView(request, env) {
       return jsonResponse({ success: false, message: 'Invalid JSON' }, 400);
     }
 
-    const { token, password } = body;
+    const { password } = body;
 
     // Validate inputs
     if (!password || !validatePassword(password)) {
       return jsonResponse({ success: false, message: 'Invalid password format' }, 400);
     }
 
-    // Get content from KV
-    const contentStr = await env.CONTENT_KV.get(token);
+    // Get content from KV using password as key
+    const contentStr = await env.CONTENT_KV.get(password);
 
     if (!contentStr) {
-      return jsonResponse({ success: false, message: 'Invalid token or content expired' }, 404);
+      return jsonResponse({ success: false, message: 'Invalid password or content expired' }, 404);
     }
 
     let data;
@@ -293,20 +294,15 @@ async function handleView(request, env) {
       return jsonResponse({ success: false, message: 'Invalid data' }, 500);
     }
 
-    // Verify password (constant-time comparison would be better but not critical here)
-    if (data.password !== password) {
-      return jsonResponse({ success: false, message: 'Invalid password' }, 401);
-    }
-
     // Check expiration
     if (new Date(data.expiresAt) < new Date()) {
-      await env.CONTENT_KV.delete(token); // Clean up expired content
+      await env.CONTENT_KV.delete(password); // Clean up expired content
       return jsonResponse({ success: false, message: 'Content expired' }, 410);
     }
 
     // Update view count
     data.views = (data.views || 0) + 1;
-    await env.CONTENT_KV.put(token, JSON.stringify(data));
+    await env.CONTENT_KV.put(password, JSON.stringify(data));
 
     return jsonResponse({
       success: true,
@@ -720,7 +716,7 @@ function handleHomePage() {
         const response = await fetch('/api/view', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: '', password })
+          body: JSON.stringify({ password })
         });
 
         const result = await response.json();
