@@ -1,15 +1,16 @@
-# Secure Content Worker
+# TempShare Worker
 
-基于Cloudflare Worker的密码保护内容分享系统，支持PC和移动端浏览器。
+基于Cloudflare Worker的临时内容分享系统，任何人都可以上传内容，系统自动生成访问密码，内容自动过期删除。
 
 ## 功能特性
 
-- 🔐 密码保护访问
-- 📋 一键复制内容
-- 📱 响应式设计（PC/移动端）
-- 🔧 管理员后台
-- ⚡ 快速部署（Cloudflare边缘网络）
-- 🔒 SHA-256密码哈希
+- 🚀 **无需注册** - 任何人都可以上传内容
+- 🔐 **自动生成密码** - 系统自动生成16位随机访问密码
+- ⏰ **自动过期** - 内容在设定时间后自动删除（1小时/6小时/24小时/7天）
+- 📋 **一键复制** - 快速复制内容到剪贴板
+- 📱 **响应式设计** - 完美支持PC和移动端
+- ⚡ **快速部署** - 基于Cloudflare边缘网络
+- 🔒 **安全可靠** - 内容加密存储，自动过期清理
 
 ## 快速开始
 
@@ -49,16 +50,7 @@ binding = "CONTENT_KV"
 id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
-#### 5. 设置管理员密码
-
-在`wrangler.toml`中添加：
-
-```toml
-[vars]
-ADMIN_PASSWORD = "your-secure-admin-password"
-```
-
-#### 6. 部署
+#### 5. 部署
 
 ```bash
 npm run deploy
@@ -102,42 +94,102 @@ npm run deploy
 - Variable name: `CONTENT_KV`
 - KV namespace: 选择刚创建的命名空间
 
-**添加环境变量：**
-- Variable name: `ADMIN_PASSWORD`
-- Value: 你的管理员密码
-- 点击 Encrypt 加密保存
-
 #### 5. 重新部署
 
-保存设置后。Worker 会自动重新部署。
+保存设置后，Worker 会自动重新部署。
+
+## 使用说明
+
+### 上传内容
+
+1. 访问 Worker URL
+2. 在文本框中输入要分享的内容（最多10KB）
+3. 选择过期时间（1小时/6小时/24小时/7天）
+4. 点击"上传内容"
+5. **重要**：保存生成的16位访问密码
+
+### 查看内容
+
+1. 访问 Worker URL
+2. 点击"查看内容"
+3. 输入访问密码
+4. 查看并复制内容
+
 ## 数据结构
 
-每个密码对应的内容结构：
+每个上传的内容结构：
 
 ```json
 {
-  "title": "示例标题",
-  "items": [
-    {
-      "label": "API Key",
-      "content": "sk-xxxxxxxxxxxxxxxx"
-    },
-    {
-      "label": "Database URL",
-      "content": "postgresql://user:pass@host:5432/db"
-    }
-  ],
+  "content": "用户输入的内容",
+  "password": "自动生成的16位访问密码",
   "createdAt": "2024-01-01T00:00:00Z",
-  "expiresAt": null
+  "expiresAt": "2024-01-02T00:00:00Z",
+  "views": 0
 }
 ```
 
 ## 安全说明
 
-1. **密码存储**：用户密码使用SHA-256哈希后存储在KV中
-2. **管理员密码**：存储在环境变量中，不要使用弱密码
+1. **密码生成**：使用安全的随机数生成器生成16位随机密码
+2. **内容限制**：内容最大长度限制为10KB
 3. **HTTPS**：Cloudflare自动提供SSL证书
 4. **XSS防护**：所有用户输入都经过HTML转义
+5. **自动过期**：内容过期后无法访问，自动清理
+
+## API端点
+
+| 端点 | 方法 | 描述 |
+|------|------|------|
+| `/` | GET | 首页/上传页面 |
+| `/api/upload` | POST | 上传内容 |
+| `/api/view` | POST | 通过密码查看内容 |
+
+## API 请求示例
+
+### 上传内容
+
+```bash
+curl -X POST https://your-worker.workers.dev/api/upload \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "这是要分享的内容",
+    "expiryHours": 24
+  }'
+```
+
+响应：
+```json
+{
+  "success": true,
+  "token": "abc123def456",
+  "password": "Xy9zAb2cD3eF4gH5",
+  "expiresAt": "2024-01-02T00:00:00Z",
+  "expiresIn": 24
+}
+```
+
+### 查看内容
+
+```bash
+curl -X POST https://your-worker.workers.dev/api/view \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "abc123def456",
+    "password": "Xy9zAb2cD3eF4gH5"
+  }'
+```
+
+响应：
+```json
+{
+  "success": true,
+  "content": "这是要分享的内容",
+  "createdAt": "2024-01-01T00:00:00Z",
+  "expiresAt": "2024-01-02T00:00:00Z",
+  "views": 1
+}
+```
 
 ## 项目结构
 
@@ -151,30 +203,25 @@ secure-content-worker/
 └── README.md             # 本文件
 ```
 
-## API端点
-
-| 端点 | 方法 | 描述 |
-|------|------|------|
-| `/` | GET | 登录页面 |
-| `/admin` | GET | 管理员页面 |
-| `/api/verify` | POST | 验证密码并返回内容 |
-| `/api/admin/add` | POST | 添加新内容 |
-| `/api/admin/delete` | POST | 删除内容 |
-| `/api/admin/list` | POST | 列出所有内容 |
-
 ## 常见问题
 
-### Q: 如何修改管理员密码？
-A: 编辑`wrangler.toml`文件中的`ADMIN_PASSWORD`，然后重新部署。
+### Q: 我忘记了访问密码怎么办？
+A: 很抱歉，密码无法找回。系统不会保存密码的明文，出于安全考虑，请妥善保存访问密码。
 
-### Q: 如何删除所有数据？
-A: 在Cloudflare Dashboard中找到KV命名空间，手动删除所有键值对。
+### Q: 内容过期后还能恢复吗？
+A: 不能。过期后内容会被自动删除，无法恢复。
 
-### Q: 支持密码过期吗？
-A: 当前版本支持`expiresAt`字段，但需要手动在添加内容时指定。
+### Q: 最大可以上传多少内容？
+A: 目前限制为10KB，适合分享文本内容如代码片段、配置信息等。
 
-### Q: 如何限制访问次数？
-A: 需要额外开发，可以在KV中记录访问次数并在验证时检查。
+### Q: 可以修改上传的内容吗？
+A: 不可以。上传后内容无法修改，如需更新请重新上传。
+
+### Q: 内容会被其他人看到吗？
+A: 只有知道访问密码的人才能查看内容。请确保密码的安全性。
+
+### Q: 如何删除已上传的内容？
+A: 内容会在过期时间后自动删除。如需立即删除，请联系管理员。
 
 ## 技术栈
 
