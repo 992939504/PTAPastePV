@@ -14,7 +14,7 @@
 
 ## 访问地址
 
-https://secure-content-worker.zxcvnmchina.workers.dev
+https://paste.363749768.xyz
 
 ## 使用说明
 
