@@ -43,10 +43,12 @@ https://paste.363749768.xyz
 
 ## API 请求示例
 
+> 注意：将 `https://your-domain.workers.dev` 替换为你的 Worker 域名
+
 ### 上传内容
 
 ```bash
-curl -X POST https://secure-content-worker.zxcvnmchina.workers.dev/api/upload \
+curl -X POST https://your-domain.workers.dev/api/upload \
   -H "Content-Type: application/json" \
   -d '{
     "content": "这是要分享的内容",
@@ -58,7 +60,6 @@ curl -X POST https://secure-content-worker.zxcvnmchina.workers.dev/api/upload \
 ```json
 {
   "success": true,
-  "token": "abc123def456",
   "password": "Xy9zAb2cD3eF4gH5",
   "expiresAt": "2024-01-02T00:00:00Z",
   "expiresIn": 24
@@ -68,10 +69,9 @@ curl -X POST https://secure-content-worker.zxcvnmchina.workers.dev/api/upload \
 ### 查看内容
 
 ```bash
-curl -X POST https://secure-content-worker.zxcvnmchina.workers.dev/api/view \
+curl -X POST https://your-domain.workers.dev/api/view \
   -H "Content-Type: application/json" \
   -d '{
-    "token": "abc123def456",
     "password": "Xy9zAb2cD3eF4gH5"
   }'
 ```
