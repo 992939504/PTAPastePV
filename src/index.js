@@ -324,229 +324,446 @@ function handleHomePage() {
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>TempShare - 临时内容分享</title>
   <meta name="description" content="临时内容分享系统 - 自动过期，安全便捷">
+  <meta name="theme-color" content="#000000">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family@&display=swap">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --ios-primary: #007AFF;
+      --ios-success: #34C759;
+      --ios-warning: #FF9500;
+      --ios-danger: #FF3B30;
+      --ios-bg: rgba(0, 0, 0, 0.85);
+      --ios-fg: #FFFFFF;
+      --ios-fg-secondary: rgba(255, 255, 255, 0.6);
+      --ios-card: rgba(30, 30, 30, 0.7);
+      --ios-border: rgba(255, 255, 255, 0.12);
+      --ios-glass: rgba(255, 255, 255, 0.08);
+      --ios-shadow: rgba(0, 0, 0, 0.4);
+      --blur-amount: 20px;
+    }
+
+    @supports (-webkit-backdrop-filter: blur(var(--blur-amount))) {
+      .glass {
+        -webkit-backdrop-filter: blur(var(--blur-amount));
+        backdrop-filter: blur(var(--blur-amount));
+      }
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
+      color: var(--ios-fg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(74, 78, 105, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
     }
 
     .container {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-      padding: 40px;
+      background: var(--ios-card);
+      border: 1px solid var(--ios-border);
+      border-radius: 24px;
+      box-shadow: 
+        0 0 0 0.5px rgba(255, 255, 255, 0.05),
+        0 25px 50px -12px var(--ios-shadow),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+      padding: 36px 28px;
       width: 100%;
-      max-width: 600px;
+      max-width: 420px;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 120px;
+      background: linear-gradient(180deg, rgba(120, 119, 198, 0.12) 0%, transparent 100%);
+      pointer-events: none;
     }
 
     h1 {
       text-align: center;
-      color: #333;
-      margin-bottom: 10px;
+      color: var(--ios-fg);
+      margin-bottom: 6px;
       font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .subtitle {
       text-align: center;
-      color: #666;
-      margin-bottom: 30px;
+      color: var(--ios-fg-secondary);
+      margin-bottom: 32px;
       font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 0.2px;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 22px;
     }
 
     label {
       display: block;
-      margin-bottom: 8px;
-      color: #555;
+      margin-bottom: 10px;
+      color: var(--ios-fg);
       font-weight: 500;
       font-size: 14px;
+      letter-spacing: 0.3px;
     }
 
-    textarea {
+    textarea, input[type="text"] {
       width: 100%;
-      padding: 12px 16px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 14px;
-      font-family: monospace;
+      padding: 16px 18px;
+      background: var(--ios-glass);
+      border: 1px solid var(--ios-border);
+      border-radius: 14px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--ios-fg);
       resize: vertical;
-      min-height: 150px;
-      transition: border-color 0.3s;
+      min-height: 140px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      -webkit-appearance: none;
+      appearance: none;
     }
 
-    textarea:focus {
+    textarea::placeholder, input[type="text"]::placeholder {
+      color: var(--ios-fg-secondary);
+    }
+
+    textarea:focus, input[type="text"]:focus {
       outline: none;
-      border-color: #667eea;
+      border-color: var(--ios-primary);
+      background: rgba(0, 122, 255, 0.1);
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15);
     }
 
     select {
       width: 100%;
-      padding: 12px 16px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 14px;
-      background: white;
+      padding: 16px 18px;
+      background: var(--ios-glass);
+      border: 1px solid var(--ios-border);
+      border-radius: 14px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--ios-fg);
       cursor: pointer;
-      transition: border-color 0.3s;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.6)' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
     }
 
     select:focus {
       outline: none;
-      border-color: #667eea;
+      border-color: var(--ios-primary);
+      background-color: rgba(0, 122, 255, 0.1);
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15);
     }
 
-    input[type="text"] {
-      width: 100%;
-      padding: 12px 16px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: border-color 0.3s;
-    }
-
-    input[type="text"]:focus {
-      outline: none;
-      border-color: #667eea;
+    select option {
+      background: #2c2c2e;
+      color: var(--ios-fg);
     }
 
     button {
       width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px;
+      background: var(--ios-primary);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 14px;
       font-size: 16px;
       font-weight: 600;
+      letter-spacing: 0.3px;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+      pointer-events: none;
     }
 
     button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
     }
 
     button:active {
-      transform: translateY(0);
+      transform: scale(0.98);
     }
 
     button.secondary {
-      background: #6c757d;
-      margin-top: 10px;
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--ios-fg);
+      margin-top: 12px;
+      border: 1px solid var(--ios-border);
+    }
+
+    button.secondary::before {
+      background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%);
     }
 
     button.secondary:hover {
-      background: #5a6268;
+      background: rgba(255, 255, 255, 0.18);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     }
 
     .message {
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 20px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      margin-bottom: 22px;
       display: none;
       text-align: center;
       font-size: 14px;
+      font-weight: 500;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .message.success {
-      background: #d4edda;
-      color: #155724;
+      background: rgba(52, 199, 89, 0.15);
+      color: var(--ios-success);
+      border: 1px solid rgba(52, 199, 89, 0.3);
     }
 
     .message.error {
-      background: #f8d7da;
-      color: #721c24;
+      background: rgba(255, 59, 48, 0.15);
+      color: var(--ios-danger);
+      border: 1px solid rgba(255, 59, 48, 0.3);
     }
 
     .result-box {
-      background: #f8f9fa;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 20px;
-      margin-top: 20px;
+      background: var(--ios-glass);
+      border: 1px solid var(--ios-border);
+      border-radius: 18px;
+      padding: 24px;
+      margin-top: 24px;
       display: none;
+      animation: fadeInScale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     .result-box h3 {
-      color: #333;
-      margin-bottom: 15px;
-      font-size: 16px;
+      color: var(--ios-success);
+      margin-bottom: 10px;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .result-box h3::before {
+      content: '✓';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: var(--ios-success);
+      color: white;
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .result-box p {
+      color: var(--ios-fg-secondary);
+      font-size: 13px;
+      margin-bottom: 20px;
+      line-height: 1.5;
     }
 
     .result-item {
-      margin-bottom: 15px;
+      margin-bottom: 18px;
+    }
+
+    .result-item:last-child {
+      margin-bottom: 0;
     }
 
     .result-item label {
       display: block;
-      margin-bottom: 5px;
-      color: #666;
+      margin-bottom: 8px;
+      color: var(--ios-fg-secondary);
       font-size: 12px;
       font-weight: 600;
       text-transform: uppercase;
+      letter-spacing: 0.8px;
     }
 
     .result-value {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 10px;
-      font-family: monospace;
-      font-size: 14px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--ios-border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-family: "SF Mono", Menlo, monospace;
       word-break: break-all;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .result-value:hover {
+      background: rgba(0, 0, 0, 0.4);
     }
 
     .copy-btn {
-      padding: 6px 12px;
-      background: #28a745;
+      padding: 8px 16px;
+      background: var(--ios-primary);
       color: white;
       border: none;
-      border-radius: 4px;
-      font-size: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
+      transition: all 0.2s ease;
     }
 
     .copy-btn:hover {
-      background: #218838;
+      background: #0066d6;
+      transform: scale(1.05);
+    }
+
+    .copy-btn:active {
+      transform: scale(0.95);
     }
 
     .char-count {
       text-align: right;
-      color: #999;
+      color: var(--ios-fg-secondary);
       font-size: 12px;
-      margin-top: 5px;
+      margin-top: 8px;
+      font-weight: 500;
     }
 
     .char-count.warning {
-      color: #dc3545;
+      color: var(--ios-warning);
     }
 
-    @media (max-width: 768px) {
+    /* iOS-style segmented control */
+    .segmented-control {
+      display: flex;
+      background: var(--ios-glass);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 24px;
+      border: 1px solid var(--ios-border);
+    }
+
+    .segment {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ios-fg-secondary);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .segment.active {
+      background: var(--ios-primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+    }
+
+    /* View content header */
+    .view-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .view-header h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .view-header p {
+      color: var(--ios-fg-secondary);
+      font-size: 13px;
+    }
+
+    @media (max-width: 480px) {
       .container {
-        padding: 30px 20px;
+        padding: 28px 20px;
+        border-radius: 20px;
       }
 
       h1 {
@@ -560,22 +777,60 @@ function handleHomePage() {
 
       .copy-btn {
         width: 100%;
+        margin-top: 10px;
       }
+
+      textarea, input[type="text"], select {
+        padding: 14px 16px;
+      }
+
+      button {
+        padding: 14px;
+      }
+    }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    button.loading {
+      opacity: 0.7;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📝 TempShare</h1>
-    <p class="subtitle">临时内容分享 - 自动过期，安全便捷</p>
+  <div class="container glass">
+    <h1>TempShare</h1>
+    <p class="subtitle">临时内容分享 · 安全便捷</p>
+
+    <!-- Segmented Control -->
+    <div class="segmented-control">
+      <div class="segment active" id="uploadTab" onclick="switchTab('upload')">上传</div>
+      <div class="segment" id="viewTab" onclick="switchTab('view')">查看</div>
+    </div>
 
     <div id="message" class="message"></div>
 
+    <!-- Upload Form -->
     <form id="uploadForm">
       <div class="form-group">
-        <label for="content">内容 (最多 10KB)</label>
-        <textarea id="content" placeholder="输入要分享的内容..." required maxlength="10240"></textarea>
-        <div class="char-count" id="charCount">0 / 10240 字符</div>
+        <label for="content">分享内容</label>
+        <textarea id="content" placeholder="输入要分享的内容，最多 10KB..." required maxlength="10240"></textarea>
+        <div class="char-count" id="charCount">0 / 10,240</div>
       </div>
 
       <div class="form-group">
@@ -588,13 +843,13 @@ function handleHomePage() {
         </select>
       </div>
 
-      <button type="submit">上传内容</button>
-      <button type="button" class="secondary" onclick="showViewForm()">查看内容</button>
+      <button type="submit" id="uploadBtn">创建分享</button>
     </form>
 
+    <!-- Result Box -->
     <div id="resultBox" class="result-box">
-      <h3>✅ 上传成功！</h3>
-      <p style="color: #666; font-size: 13px; margin-bottom: 15px;">请妥善保存以下信息，内容将在指定时间后自动删除</p>
+      <h3>上传成功</h3>
+      <p>请妥善保存访问密码，内容将在指定时间后自动删除</p>
 
       <div class="result-item">
         <label>访问密码</label>
@@ -611,30 +866,32 @@ function handleHomePage() {
         </div>
       </div>
 
-      <button class="secondary" onclick="resetForm()">上传新内容</button>
+      <button class="secondary" onclick="resetForm()">分享新内容</button>
     </div>
 
+    <!-- View Form -->
     <form id="viewForm" style="display: none;">
-      <div class="form-group">
-        <label for="token">访问 Token (可选)</label>
-        <input type="text" id="token" placeholder="Token（如果已知）">
+      <div class="view-header">
+        <h3>查看内容</h3>
+        <p>输入访问密码查看内容</p>
       </div>
 
       <div class="form-group">
         <label for="password">访问密码</label>
-        <input type="text" id="password" placeholder="输入访问密码" required maxlength="16">
+        <input type="text" id="password" placeholder="输入 16 位访问密码" required maxlength="16" autocomplete="off">
       </div>
 
-      <button type="submit">查看内容</button>
-      <button type="button" class="secondary" onclick="showUploadForm()">返回上传</button>
+      <button type="submit" id="viewBtn">查看内容</button>
     </form>
 
+    <!-- View Result -->
     <div id="viewResult" class="result-box">
-      <h3>📄 内容</h3>
+      <h3 style="--ios-success: var(--ios-primary);">📄 内容详情</h3>
+      
       <div class="result-item">
         <label>内容</label>
-        <div class="result-value" style="align-items: flex-start;">
-          <pre id="viewContent" style="margin: 0; white-space: pre-wrap; word-break: break-all;"></pre>
+        <div class="result-value" style="align-items: flex-start; min-height: 80px; white-space: pre-wrap;">
+          <pre id="viewContent" style="margin: 0; font-family: inherit; font-size: 14px; line-height: 1.5; width: 100%;"></pre>
         </div>
       </div>
 
@@ -660,11 +917,38 @@ function handleHomePage() {
   <script>
     const MAX_CHARS = 10240;
 
+    // Tab switching
+    function switchTab(tab) {
+      const uploadTab = document.getElementById('uploadTab');
+      const viewTab = document.getElementById('viewTab');
+      const uploadForm = document.getElementById('uploadForm');
+      const viewForm = document.getElementById('viewForm');
+      const resultBox = document.getElementById('resultBox');
+      const viewResult = document.getElementById('viewResult');
+
+      if (tab === 'upload') {
+        uploadTab.classList.add('active');
+        viewTab.classList.remove('active');
+        uploadForm.style.display = 'block';
+        viewForm.style.display = 'none';
+        resultBox.style.display = 'none';
+        viewResult.style.display = 'none';
+      } else {
+        viewTab.classList.add('active');
+        uploadTab.classList.remove('active');
+        viewForm.style.display = 'block';
+        uploadForm.style.display = 'none';
+        resultBox.style.display = 'none';
+        viewResult.style.display = 'none';
+      }
+      hideMessage();
+    }
+
     // Character count
     document.getElementById('content').addEventListener('input', function() {
       const count = this.value.length;
       const countEl = document.getElementById('charCount');
-      countEl.textContent = count + ' / ' + MAX_CHARS + ' 字符';
+      countEl.textContent = count.toLocaleString() + ' / 10,240';
       if (count > MAX_CHARS * 0.9) {
         countEl.classList.add('warning');
       } else {
@@ -677,6 +961,11 @@ function handleHomePage() {
       e.preventDefault();
       const content = document.getElementById('content').value;
       const expiryHours = parseInt(document.getElementById('expiry').value);
+      const btn = document.getElementById('uploadBtn');
+
+      // Show loading
+      btn.classList.add('loading');
+      btn.innerHTML = '<span class="spinner"></span>上传中...';
 
       try {
         const response = await fetch('/api/upload', {
@@ -687,18 +976,29 @@ function handleHomePage() {
 
         const result = await response.json();
 
+        // Reset button
+        btn.classList.remove('loading');
+        btn.textContent = '创建分享';
+
         if (result.success) {
           document.getElementById('uploadForm').style.display = 'none';
-          document.getElementById('viewForm').style.display = 'none';
           document.getElementById('resultBox').style.display = 'block';
           document.getElementById('resultPassword').textContent = result.password;
-          document.getElementById('resultExpiry').textContent = new Date(result.expiresAt).toLocaleString();
+          document.getElementById('resultExpiry').textContent = new Date(result.expiresAt).toLocaleString('zh-CN', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          });
           showMessage('上传成功！请保存访问密码', 'success');
         } else {
           showMessage(escapeHtml(result.message || '上传失败'), 'error');
         }
       } catch (error) {
-        showMessage('网络错误', 'error');
+        btn.classList.remove('loading');
+        btn.textContent = '创建分享';
+        showMessage('网络错误，请稍后重试', 'error');
       }
     });
 
@@ -706,11 +1006,16 @@ function handleHomePage() {
     document.getElementById('viewForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const password = document.getElementById('password').value.trim();
+      const btn = document.getElementById('viewBtn');
 
       if (password.length !== 16) {
-        showMessage('密码必须是16位字符', 'error');
+        showMessage('密码必须是 16 位字符', 'error');
         return;
       }
+
+      // Show loading
+      btn.classList.add('loading');
+      btn.innerHTML = '<span class="spinner"></span>加载中...';
 
       try {
         const response = await fetch('/api/view', {
@@ -721,19 +1026,29 @@ function handleHomePage() {
 
         const result = await response.json();
 
+        // Reset button
+        btn.classList.remove('loading');
+        btn.textContent = '查看内容';
+
         if (result.success) {
-          document.getElementById('uploadForm').style.display = 'none';
           document.getElementById('viewForm').style.display = 'none';
           document.getElementById('viewResult').style.display = 'block';
-          // Use textContent to prevent XSS
           document.getElementById('viewContent').textContent = result.content;
-          document.getElementById('viewExpiry').textContent = new Date(result.expiresAt).toLocaleString();
-          document.getElementById('viewViews').textContent = result.views;
+          document.getElementById('viewExpiry').textContent = new Date(result.expiresAt).toLocaleString('zh-CN', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          });
+          document.getElementById('viewViews').textContent = result.views + ' 次';
         } else {
           showMessage(escapeHtml(result.message || '查看失败'), 'error');
         }
       } catch (error) {
-        showMessage('网络错误', 'error');
+        btn.classList.remove('loading');
+        btn.textContent = '查看内容';
+        showMessage('网络错误，请稍后重试', 'error');
       }
     });
 
@@ -749,47 +1064,39 @@ function handleHomePage() {
       });
     }
 
-    // Show/hide forms
-    function showViewForm() {
-      document.getElementById('uploadForm').style.display = 'none';
-      document.getElementById('resultBox').style.display = 'none';
-      document.getElementById('viewResult').style.display = 'none';
-      document.getElementById('viewForm').style.display = 'block';
-    }
-
-    function showUploadForm() {
-      document.getElementById('viewForm').style.display = 'none';
-      document.getElementById('resultBox').style.display = 'none';
-      document.getElementById('viewResult').style.display = 'none';
-      document.getElementById('uploadForm').style.display = 'block';
-    }
-
+    // Reset forms
     function resetForm() {
       document.getElementById('content').value = '';
-      document.getElementById('charCount').textContent = '0 / ' + MAX_CHARS + ' 字符';
+      document.getElementById('charCount').textContent = '0 / 10,240';
       document.getElementById('charCount').classList.remove('warning');
       document.getElementById('resultBox').style.display = 'none';
       document.getElementById('uploadForm').style.display = 'block';
+      switchTab('upload');
     }
 
     function resetView() {
       document.getElementById('password').value = '';
       document.getElementById('viewResult').style.display = 'none';
       document.getElementById('viewForm').style.display = 'block';
+      hideMessage();
     }
 
-    // Show message
+    // Show/hide message
     function showMessage(text, type) {
       const msg = document.getElementById('message');
       msg.textContent = text;
       msg.className = 'message ' + type;
       msg.style.display = 'block';
       setTimeout(() => {
-        msg.style.display = 'none';
-      }, 3000);
+        hideMessage();
+      }, 4000);
     }
 
-    // Escape HTML - used for user-generated error messages
+    function hideMessage() {
+      document.getElementById('message').style.display = 'none';
+    }
+
+    // Escape HTML
     function escapeHtml(text) {
       if (typeof text !== 'string') return '';
       const div = document.createElement('div');
